@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess The Word Multiplayer + Solitario</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- LOBBY MULTIPLAYER -->
+    <div id="lobby-container">
+        <h2>Play Guess The Word Multiplayer</h2>
+
+        <!-- Dropdown lingua -->
+        <label for="languageSelect">Select the language:</label>
+        <select id="languageSelect">
+            <option value="it">Italian</option>
+            <option value="en">English</option>
+        </select>
+
+        <button id="create-room-btn">Create room</button>
+        <p>or</p>
+        <input type="text" id="room-code-input" placeholder="Room Code" maxlength="4">
+        <button id="join-room-btn">Join</button>
+        <p id="lobby-message"></p>
+
+        <hr>
+
+        <!-- BOTTONE SOLITARIO -->
+        <button id="solo-btn">Play Solo</button>
+    </div>
+
+    <!-- GAME CONTAINER -->
+    <div id="game-container" style="display: none;">
+        <div id="game-status">
+            <h3 id="player-turn">Waiting for your opponent...</h3>
+            <p id="game-message"></p>
+        </div>
+
+        <div id="grid-container"></div>
+
+        <!-- TIMER PER TURNO (puoi adattare) -->
+        <div id="turn-timer" style="font-size: 0.9em; margin: 5px 0; text-align: center;">
+            Time left: 45s
+        </div>
+
+        <div id="keyboard-container"></div>
+    </div>
+
+    <!-- SOCKET.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- MULTIPLAYER -->
+    <script src="script.js"></script>
+
+    <!-- SOLO MODE -->
+    <script src="solo.js"></script>
+
+</body>
+</html>
