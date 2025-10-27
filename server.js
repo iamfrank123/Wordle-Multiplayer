@@ -1057,14 +1057,61 @@ function initializeRoomState(roomCode, players, language = "it") {
         currentTurnSocket: players[0],
         grid: [],
         currentRow: 0,
-        maxRows: 1,
+        maxRows: 6,
         rematchRequests: 0,
         language: language
     };
     return rooms[roomCode];
 }
 
-io.on('connection', (socket) => {
+io.on('connection', (socket) => {// --------- STORAGE SOLO MODE ----------
+const solos = {}; // socket.id -> { secretWord, grid, currentRow, maxRows, language }
+
+// --- Solo Mode ---
+socket.on('startSolo', (language = "it") => {
+    const secret = selectSecretWord(language);
+    solos[socket.id] = {
+        secretWord: secret,
+        grid: [],
+        currentRow: 0,
+        maxRows: 6,
+        language
+    };
+    console.log(`[SERVER] Solo started for ${socket.id}, secret: ${secret}`);
+    socket.emit('soloStarted', { maxRows: 6 });
+});
+
+socket.on('submitSolo', (word) => {
+    const session = solos[socket.id];
+    if (!session) return socket.emit('soloError', 'Sessione non trovata.');
+
+    const guess = word.toUpperCase();
+    if (guess.length !== WORD_LENGTH) return socket.emit('soloError', `Parola di ${WORD_LENGTH} lettere!`);
+
+    const validWords = session.language === 'it' ? VALID_WORDS_IT : VALID_WORDS_EN;
+    if (!validWords.includes(guess)) return socket.emit('soloError', 'Parola non valida!');
+
+    const feedback = getFeedback(guess, session.secretWord);
+    session.grid.push({ word: guess, feedback });
+    const hasWon = feedback.every(f => f === 'correct-position');
+
+    if (hasWon) {
+        socket.emit('soloUpdate', { grid: session.grid, currentRow: session.currentRow, maxRows: session.maxRows });
+        socket.emit('soloGameOver', { won: true, secretWord: session.secretWord, grid: session.grid });
+        delete solos[socket.id];
+        return;
+    }
+
+    session.currentRow++;
+    if (session.currentRow >= session.maxRows) session.maxRows += 5;
+
+    socket.emit('soloUpdate', { grid: session.grid, currentRow: session.currentRow, maxRows: session.maxRows });
+});
+
+socket.on('disconnect', () => {
+    if (solos[socket.id]) delete solos[socket.id];
+});
+
     console.log(`[SERVER] Nuovo utente connesso: ${socket.id}`);
 
     socket.on('createRoom', (language = "it") => {
@@ -1149,7 +1196,7 @@ io.on('connection', (socket) => {
         room.currentTurnSocket = room.players[room.currentPlayerIndex];
 
         if (room.currentRow >= room.maxRows) {
-            room.maxRows += 1;
+            room.maxRows += 5;
         }
 
         io.to(roomCode).emit('updateGameState', {
