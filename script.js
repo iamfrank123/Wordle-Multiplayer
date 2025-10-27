@@ -28,7 +28,7 @@ let isMyTurn = false;
 let currentGuess = '';
 let currentRowIndex = 0;
 const WORD_LENGTH = 5;
-let totalRows = 1;
+let totalRows = 6;
 let keyStates = {};
 
 // ------------------ TIMER ------------------
@@ -249,12 +249,12 @@ function resetGameInterface() {
     isMyTurn = false;
     currentGuess = '';
     currentRowIndex = 0;
-    totalRows = 1;
+    totalRows = 6;
     keyStates = {};
 
     playerTurnH3.textContent = 'Waiting for your opponent...';
     gameMessageP.textContent = 'New game started!';
-    generateGrid(1);
+    generateGrid(6);
     generateKeyboard();
 }
 
